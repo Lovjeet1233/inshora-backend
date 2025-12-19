@@ -13,6 +13,7 @@ import { Sparkles, Heart, MessageCircle, Share2, Trash2, RefreshCw, TrendingUp, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SocialMediaPost } from "@/types";
 import { formatDate, truncate } from "@/lib/utils";
+import { BACKEND_URL } from "@/lib/api";
 import Image from "next/image";
 
 export default function SocialMediaPage() {
@@ -41,7 +42,19 @@ export default function SocialMediaPage() {
     if (!idea) return;
     
     const result = await generateImages({ idea, style, platform: "facebook" });
-    setGeneratedData(result);
+    
+    // Prepend backend URL to image paths if they're relative
+    if (result && result.images) {
+      const fullImageUrls = result.images.map(img => 
+        img.startsWith('http') ? img : `${BACKEND_URL}${img}`
+      );
+      setGeneratedData({
+        ...result,
+        images: fullImageUrls
+      });
+    } else {
+      setGeneratedData(result);
+    }
   };
 
   const handlePostToFacebook = (imageUrl: string) => {
@@ -131,13 +144,24 @@ export default function SocialMediaPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Content Idea</Label>
+            <Label>Content Idea (min. 10 characters)</Label>
             <Textarea
               value={idea}
               onChange={(e) => setIdea(e.target.value)}
               placeholder="Describe what you want to create... e.g., 'A professional insurance infographic about health coverage'"
               rows={3}
+              className={idea.length > 0 && idea.length < 10 ? "border-red-500" : ""}
             />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>
+                {idea.length < 10 && idea.length > 0 && (
+                  <span className="text-red-500">At least 10 characters required</span>
+                )}
+              </span>
+              <span className={idea.length > 5000 ? "text-red-500" : ""}>
+                {idea.length}/5000
+              </span>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -157,7 +181,7 @@ export default function SocialMediaPage() {
             </div>
           </div>
 
-          <Button onClick={handleGenerateImages} disabled={isGenerating || !idea}>
+          <Button onClick={handleGenerateImages} disabled={isGenerating || !idea || idea.length < 10 || idea.length > 5000}>
             {isGenerating ? (
               <>
                 <LoadingSpinner size={16} className="mr-2" />

@@ -3,6 +3,9 @@ import type { ApiError, ApiResponse } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
+// Backend base URL (without /api) for static files
+export const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || "http://localhost:5000";
+
 export const api = axios.create({
   baseURL: API_URL,
   headers: {

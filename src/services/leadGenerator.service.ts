@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { logger } from '../utils/logger';
 import { ISettings } from '../models/Settings';
+import Prompt from '../models/Prompt';
 
 const BASE_URL = process.env.LEAD_GENERATOR_BASE_URL || 'https://inshora-lead-generator.onrender.com';
 
@@ -138,14 +139,53 @@ export const makeOutboundCall = async (
   settings: ISettings
 ): Promise<any> => {
   const url = `${BASE_URL}/outbound`;
+  
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.info('🔍 FETCHING DEFAULT PROMPT');
+  logger.info(`👤 User ID: ${settings.userId}`);
+  
+  // Get default prompt for dynamic instruction and voice_id
+  let dynamicInstruction = settings.voiceCall.dynamicInstruction;
+  let voiceId = settings.voiceCall.voiceId;
+  let promptUsed = false;
+  
+  try {
+    const defaultPrompt = await Prompt.findOne({
+      userId: settings.userId,
+      isDefault: true
+    });
+    
+    logger.info(`📋 Default Prompt Query Result: ${defaultPrompt ? 'FOUND' : 'NOT FOUND'}`);
+    
+    if (defaultPrompt) {
+      dynamicInstruction = defaultPrompt.content;
+      voiceId = defaultPrompt.voiceId;
+      promptUsed = true;
+      logger.info(`✅ Using default prompt: "${defaultPrompt.name}"`);
+      logger.info(`📝 Content: ${defaultPrompt.content.substring(0, 100)}...`);
+      logger.info(`🎤 Voice ID: ${voiceId}`);
+    } else {
+      logger.warn('⚠️  No default prompt found, using settings fallback');
+      logger.info(`📝 Fallback Content: ${dynamicInstruction}`);
+      logger.info(`🎤 Fallback Voice: ${voiceId}`);
+    }
+  } catch (error: any) {
+    logger.error(`❌ Error fetching default prompt: ${error.message}`);
+    logger.error(`❌ Error stack: ${error.stack}`);
+    logger.info('📝 Falling back to settings');
+  }
+  
+  logger.info(`💡 Prompt Used: ${promptUsed ? 'YES (from Prompts)' : 'NO (from Settings)'}`);
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  
   const payload = {
     phone_number: phoneNumber,
     name,
-    dynamic_instruction: settings.voiceCall.dynamicInstruction,
+    dynamic_instruction: dynamicInstruction,
     sip_trunk_id: settings.voiceCall.sipTrunkId,
     transfer_to: settings.voiceCall.transferTo,
     api_key: settings.voiceCall.apiKey,
-    voice_id: settings.voiceCall.voiceId,
+    voice_id: voiceId,
     provider: settings.voiceCall.provider,
     language: settings.voiceCall.language || 'en',
     escalation_condition: settings.voiceCall.escalationCondition

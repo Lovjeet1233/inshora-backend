@@ -42,6 +42,12 @@ export interface Settings {
     voiceId: string;
     provider: string;
   };
+  apollo: {
+    apiKey: string;
+  };
+  google: {
+    apiKey: string;
+  };
   leadGeneratorEndpoint: string;
 }
 

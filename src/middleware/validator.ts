@@ -100,8 +100,8 @@ export const generateImagesValidator: ValidationChain[] = [
   body('idea')
     .notEmpty()
     .withMessage('Image idea is required')
-    .isLength({ min: 10, max: 500 })
-    .withMessage('Idea must be between 10 and 500 characters'),
+    .isLength({ min: 10, max: 5000 })
+    .withMessage('Idea must be between 10 and 5000 characters'),
   body('style')
     .optional()
     .isString()

@@ -3,6 +3,8 @@ import { validationResult } from 'express-validator';
 import multer from 'multer';
 import Campaign from '../models/Campaign';
 import Settings from '../models/Settings';
+import Contact from '../models/Contact';
+import ContactList from '../models/ContactList';
 import { AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 import { parseCSV } from '../utils/csvParser';
@@ -580,6 +582,78 @@ export const addContactsToCampaign = asyncHandler(async (req: AuthRequest, res: 
   });
 });
 
+// @desc    Load contacts from a contact list to campaign
+// @route   POST /api/campaigns/:id/load-from-list
+// @access  Private
+export const loadContactsFromList = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+
+  const campaign = await Campaign.findOne({
+    _id: req.params.id,
+    userId: req.userId
+  });
+
+  if (!campaign) {
+    return res.status(404).json({
+      success: false,
+      message: 'Campaign not found'
+    });
+  }
+
+  const { list_id } = req.body;
+
+  // Find the contact list
+  const contactList = await ContactList.findOne({
+    _id: list_id,
+    userId: req.userId
+  });
+
+  if (!contactList) {
+    return res.status(404).json({
+      success: false,
+      message: 'Contact list not found'
+    });
+  }
+
+  // Fetch all contacts from the list
+  const contacts = await Contact.find({
+    _id: { $in: contactList.contacts },
+    userId: req.userId
+  });
+
+  if (contacts.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'No contacts found in the list'
+    });
+  }
+
+  // Convert Contact model to campaign contact format
+  const campaignContacts = contacts.map(contact => ({
+    name: contact.name,
+    email: contact.email || undefined,
+    phone: contact.phone || undefined
+  }));
+
+  campaign.contacts.push(...campaignContacts);
+  await campaign.save();
+
+  logger.info(`${campaignContacts.length} contacts loaded from list ${contactList.name} to campaign ${campaign._id}`);
+
+  return res.status(200).json({
+    success: true,
+    message: `${campaignContacts.length} contacts loaded from list successfully`,
+    data: campaign
+  });
+});
+
 export default {
   createCampaign,
   getCampaigns,
@@ -591,5 +665,6 @@ export default {
   sendEmailMessage,
   makeCall,
   addContactToCampaign,
-  addContactsToCampaign
+  addContactsToCampaign,
+  loadContactsFromList
 };

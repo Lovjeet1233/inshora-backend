@@ -13,11 +13,17 @@ import {
   Bot,
   Phone,
   X,
+  Search,
+  Users,
+  FileText,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Lead Generation", href: "/lead-generation", icon: Search },
+  { name: "Contacts", href: "/contacts", icon: Users },
   { name: "Campaigns", href: "/campaigns", icon: Mail },
+  { name: "Prompts", href: "/prompts", icon: FileText },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Calls", href: "/calls", icon: Phone },
   { name: "Social Media", href: "/social-media", icon: Share2 },

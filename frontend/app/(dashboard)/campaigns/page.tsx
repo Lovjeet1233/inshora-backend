@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Contact } from "@/types";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { api, handleApiError } from "@/lib/api";
+
+interface ContactList {
+  _id: string;
+  name: string;
+  description?: string;
+  contacts: any[];
+  createdAt: string;
+}
 
 export default function CampaignsPage() {
   const [filter, setFilter] = useState<string>("");
@@ -43,6 +59,62 @@ export default function CampaignsPage() {
     email: "",
     phone: "",
   });
+
+  const [contactLists, setContactLists] = useState<ContactList[]>([]);
+  const [selectedListId, setSelectedListId] = useState<string>("");
+  const [loadingLists, setLoadingLists] = useState(false);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+
+  useEffect(() => {
+    if (showCreateModal) {
+      fetchContactLists();
+    }
+  }, [showCreateModal]);
+
+  const fetchContactLists = async () => {
+    setLoadingLists(true);
+    try {
+      const response = await api.get("/contacts/lists");
+      setContactLists(response.data.data);
+    } catch (error) {
+      const message = await handleApiError(error);
+      toast.error(message);
+    } finally {
+      setLoadingLists(false);
+    }
+  };
+
+  const handleLoadFromList = async () => {
+    if (!selectedListId) {
+      toast.error("Please select a list");
+      return;
+    }
+
+    setLoadingContacts(true);
+    try {
+      const response = await api.get(`/contacts/lists/${selectedListId}`);
+      const list = response.data.data;
+      
+      const contacts = list.contacts.map((contact: any) => ({
+        name: contact.name,
+        email: contact.email || "",
+        phone: contact.phone || "",
+      }));
+
+      setCampaignData((prev) => ({
+        ...prev,
+        contacts: [...prev.contacts, ...contacts],
+      }));
+
+      toast.success(`Loaded ${contacts.length} contacts from list`);
+      setSelectedListId("");
+    } catch (error) {
+      const message = await handleApiError(error);
+      toast.error(message);
+    } finally {
+      setLoadingContacts(false);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -285,14 +357,42 @@ export default function CampaignsPage() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Upload Contacts (CSV)</Label>
-              <Input type="file" accept=".csv" onChange={handleFileUpload} />
-              {campaignData.contacts.length > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {campaignData.contacts.length} contacts uploaded
-                </p>
-              )}
+            <div className="space-y-3">
+              <Label>Load Contacts from List</Label>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Select value={selectedListId} onValueChange={setSelectedListId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a contact list" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {loadingLists ? (
+                        <div className="p-2 text-center text-sm text-muted-foreground">
+                          Loading lists...
+                        </div>
+                      ) : contactLists.length > 0 ? (
+                        contactLists.map((list) => (
+                          <SelectItem key={list._id} value={list._id}>
+                            {list.name} ({list.contacts.length} contacts)
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-center text-sm text-muted-foreground">
+                          No lists available
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleLoadFromList}
+                  disabled={!selectedListId || loadingContacts}
+                >
+                  {loadingContacts ? <LoadingSpinner size={16} /> : "Load"}
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-3">

@@ -63,12 +63,14 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="whatsapp" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
           <TabsTrigger value="facebook">Facebook</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="sms">SMS</TabsTrigger>
           <TabsTrigger value="voice">Voice Call</TabsTrigger>
+          <TabsTrigger value="apollo">Apollo.io</TabsTrigger>
+          <TabsTrigger value="google">Google AI</TabsTrigger>
         </TabsList>
 
         <TabsContent value="whatsapp">
@@ -401,6 +403,90 @@ export default function SettingsPage() {
               </div>
               <Button
                 onClick={() => handleSubmit("voice")}
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Saving..." : "Save Settings"}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="apollo">
+          <Card>
+            <CardHeader>
+              <CardTitle>Apollo.io Settings</CardTitle>
+              <CardDescription>
+                Configure your Apollo.io API key for lead generation
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="apollo-api">Apollo API Key</Label>
+                <Input
+                  id="apollo-api"
+                  type="password"
+                  value={formData.apollo?.apiKey || ""}
+                  onChange={(e) =>
+                    updateField("apollo", "apiKey", e.target.value)
+                  }
+                  placeholder="Enter Apollo.io API key"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Get your API key from{" "}
+                  <a
+                    href="https://app.apollo.io/#/settings/integrations/api"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Apollo.io Settings
+                  </a>
+                </p>
+              </div>
+              <Button
+                onClick={() => handleSubmit("apollo")}
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Saving..." : "Save Settings"}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="google">
+          <Card>
+            <CardHeader>
+              <CardTitle>Google AI Settings</CardTitle>
+              <CardDescription>
+                Configure your Google Gemini API key for AI image generation
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="google-api">Google API Key</Label>
+                <Input
+                  id="google-api"
+                  type="password"
+                  value={formData.google?.apiKey || ""}
+                  onChange={(e) =>
+                    updateField("google", "apiKey", e.target.value)
+                  }
+                  placeholder="Enter Google Gemini API key"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Get your API key from{" "}
+                  <a
+                    href="https://aistudio.google.com/apikey"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Google AI Studio
+                  </a>
+                </p>
+              </div>
+              <Button
+                onClick={() => handleSubmit("google")}
                 disabled={isUpdating}
               >
                 {isUpdating ? "Saving..." : "Save Settings"}

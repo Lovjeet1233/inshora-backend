@@ -10,7 +10,8 @@ import {
   sendEmailMessage,
   makeCall,
   addContactToCampaign,
-  addContactsToCampaign
+  addContactsToCampaign,
+  loadContactsFromList
 } from '../controllers/campaign.controller';
 import { upload } from '../controllers/campaign.controller';
 import { protect } from '../middleware/auth';
@@ -23,6 +24,7 @@ import {
   addContactValidator,
   addContactsValidator
 } from '../middleware/validator';
+import { body } from 'express-validator';
 import { campaignLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
@@ -36,6 +38,9 @@ router.post('/:id/start', campaignLimiter, startCampaign);
 router.post('/:id/pause', pauseCampaign);
 router.post('/:id/add-contact', addContactValidator, addContactToCampaign);
 router.post('/:id/add-contacts', addContactsValidator, addContactsToCampaign);
+router.post('/:id/load-from-list', [
+  body('list_id').notEmpty().withMessage('List ID is required')
+], loadContactsFromList);
 router.post('/upload-csv', upload.single('file'), uploadCSV);
 router.post('/send-sms', campaignLimiter, sendSmsValidator, sendSMSMessage);
 router.post('/send-email', campaignLimiter, sendEmailValidator, sendEmailMessage);

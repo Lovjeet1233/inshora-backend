@@ -4,7 +4,7 @@ import SocialMediaPost from '../models/SocialMediaPost';
 import Settings from '../models/Settings';
 import { AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
-import { generateImages } from '../services/openai.service';
+import { generateImages } from '../services/google.service';
 import {
   validateFacebookToken,
   postToFacebook,
@@ -63,9 +63,18 @@ export const generateSocialImages = asyncHandler(async (req: AuthRequest, res: R
     });
   }
 
+  // Get Google API key from settings
+  const settings = await Settings.findOne({ userId: req.userId });
+  if (!settings || !settings.google?.apiKey) {
+    return res.status(400).json({
+      success: false,
+      message: 'Google API key not configured. Please add it in Settings.'
+    });
+  }
+
   const { idea, style = 'professional', platform = 'facebook' } = req.body;
 
-  const result = await generateImages(idea, style, platform);
+  const result = await generateImages(idea, style, platform, settings.google.apiKey);
 
   logger.info(`Generated ${result.images.length} images for user ${req.userId}`);
 

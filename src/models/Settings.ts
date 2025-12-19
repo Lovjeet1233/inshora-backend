@@ -32,6 +32,12 @@ export interface ISettings extends Document {
     language: string;
     escalationCondition: string;
   };
+  apollo: {
+    apiKey: string;
+  };
+  google: {
+    apiKey: string;
+  };
   leadGeneratorEndpoint: string;
   createdAt: Date;
   updatedAt: Date;
@@ -73,6 +79,12 @@ const SettingsSchema: Schema = new Schema({
     provider: { type: String, default: 'openai' },
     language: { type: String, default: 'en' },
     escalationCondition: { type: String, default: '' }
+  },
+  apollo: {
+    apiKey: { type: String, default: '' }
+  },
+  google: {
+    apiKey: { type: String, default: '' }
   },
   leadGeneratorEndpoint: {
     type: String,
