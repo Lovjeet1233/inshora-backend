@@ -1,7 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { logger } from '../utils/logger';
+import { uploadToGCS } from './gcs.service';
 
 export interface GeneratedImage {
   url: string;
@@ -63,22 +62,17 @@ export const generateImages = async (
         if (part.inlineData && part.inlineData.data) {
           imageBuffer = Buffer.from(part.inlineData.data, "base64");
           
-          // Create uploads directory if it doesn't exist
-          const uploadsDir = path.join(process.cwd(), 'uploads', 'generated-images');
-          if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-          }
-
-          // Save image to file system
+          // Upload to Google Cloud Storage
           const filename = `image-${Date.now()}-${index}.png`;
-          const filepath = path.join(uploadsDir, filename);
-          fs.writeFileSync(filepath, imageBuffer);
           
-          // Create URL path (this should be served by your static file server)
-          imageUrl = `/uploads/generated-images/${filename}`;
-          
-          logger.info(`💾 Image ${index + 1} saved: ${filepath}`);
-          logger.info(`🔗 Image URL: ${imageUrl}`);
+          try {
+            imageUrl = await uploadToGCS(imageBuffer, filename, 'image/png');
+            logger.info(`💾 Image ${index + 1} uploaded to GCS`);
+            logger.info(`🔗 Public URL: ${imageUrl}`);
+          } catch (error: any) {
+            logger.error(`❌ Failed to upload image ${index + 1} to GCS: ${error.message}`);
+            throw error;
+          }
         }
       }
 

@@ -13,7 +13,6 @@ import { Sparkles, Heart, MessageCircle, Share2, Trash2, RefreshCw, TrendingUp, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SocialMediaPost } from "@/types";
 import { formatDate, truncate } from "@/lib/utils";
-import { BACKEND_URL } from "@/lib/api";
 import Image from "next/image";
 
 export default function SocialMediaPage() {
@@ -43,18 +42,8 @@ export default function SocialMediaPage() {
     
     const result = await generateImages({ idea, style, platform: "facebook" });
     
-    // Prepend backend URL to image paths if they're relative
-    if (result && result.images) {
-      const fullImageUrls = result.images.map(img => 
-        img.startsWith('http') ? img : `${BACKEND_URL}${img}`
-      );
-      setGeneratedData({
-        ...result,
-        images: fullImageUrls
-      });
-    } else {
-      setGeneratedData(result);
-    }
+    // Images are now full GCS URLs, no need to prepend anything
+    setGeneratedData(result);
   };
 
   const handlePostToFacebook = (imageUrl: string) => {

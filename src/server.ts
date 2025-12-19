@@ -9,6 +9,7 @@ import { errorHandler, notFound } from './middleware/errorHandler';
 import { apiLimiter, webhookLimiter } from './middleware/rateLimiter';
 import routes from './routes';
 import { webhook } from './controllers/whatsapp.controller';
+import { initializeGCS } from './services/gcs.service';
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +19,9 @@ const app: Application = express();
 
 // Connect to MongoDB
 connectDB();
+
+// Initialize Google Cloud Storage
+initializeGCS();
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(__dirname, '..', 'logs');

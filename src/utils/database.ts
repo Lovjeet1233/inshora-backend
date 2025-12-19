@@ -6,7 +6,9 @@ export const connectDB = async (): Promise<void> => {
     const mongoUri = process.env.MONGODB_URI;
 
     if (!mongoUri) {
-      throw new Error('MONGODB_URI is not defined in environment variables');
+      logger.warn('MONGODB_URI is not defined in environment variables. Running without database connection.');
+      logger.warn('Static file serving will work, but API endpoints requiring database will fail.');
+      return;
     }
 
     const conn = await mongoose.connect(mongoUri);
@@ -34,7 +36,7 @@ export const connectDB = async (): Promise<void> => {
     });
   } catch (error: any) {
     logger.error(`Error connecting to MongoDB: ${error.message}`);
-    process.exit(1);
+    logger.warn('Server will continue running for static file serving, but database operations will fail.');
   }
 };
 

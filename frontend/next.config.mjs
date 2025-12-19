@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['oaidalleapiprodscus.blob.core.windows.net', 'platform.openai.com', 'scontent.fbom5-1.fna.fbcdn.net', 'localhost'],
+    domains: [
+      'oaidalleapiprodscus.blob.core.windows.net', 
+      'platform.openai.com', 
+      'scontent.fbom5-1.fna.fbcdn.net', 
+      'localhost',
+      'storage.googleapis.com'
+    ],
     remotePatterns: [
       {
         protocol: 'https',
@@ -10,6 +16,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**.openai.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
       },
       {
         protocol: 'http',
