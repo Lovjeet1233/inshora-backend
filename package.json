@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
-    "test": "jest"
+    "test": "jest",
+    "add-user": "ts-node scripts/addUser.ts"
   },
   "keywords": [
     "crm",

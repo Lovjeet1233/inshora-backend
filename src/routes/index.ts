@@ -11,6 +11,7 @@ import aiRoutes from './ai.routes';
 import leadsRoutes from './leads.routes';
 import contactsRoutes from './contacts.routes';
 import promptsRoutes from './prompts.routes';
+import inboundRoutes from './inbound.routes';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/ai', aiRoutes);
 router.use('/leads', leadsRoutes);
 router.use('/contacts', contactsRoutes);
 router.use('/prompts', promptsRoutes);
+router.use('/inbound', inboundRoutes);
 
 export default router;

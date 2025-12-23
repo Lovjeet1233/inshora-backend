@@ -1,5 +1,4 @@
 import { Storage } from '@google-cloud/storage';
-import * as path from 'path';
 import { logger } from '../utils/logger';
 
 let storage: Storage | null = null;
@@ -12,17 +11,24 @@ export const initializeGCS = (): void => {
   try {
     const projectId = process.env.GCS_PROJECT_ID;
     bucketName = process.env.GCS_BUCKET_NAME || '';
-    const keyFilename = process.env.GCS_KEY_FILE;
+    const clientEmail = process.env.GCS_CLIENT_EMAIL;
+    const privateKey = process.env.GCS_PRIVATE_KEY;
 
-    if (!projectId || !bucketName || !keyFilename) {
+    if (!projectId || !bucketName || !clientEmail || !privateKey) {
       logger.warn('GCS configuration missing. Image uploads will fail.');
-      logger.warn('Required: GCS_PROJECT_ID, GCS_BUCKET_NAME, GCS_KEY_FILE');
+      logger.warn('Required: GCS_PROJECT_ID, GCS_BUCKET_NAME, GCS_CLIENT_EMAIL, GCS_PRIVATE_KEY');
       return;
     }
 
+    // Replace escaped newlines in private key
+    const formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
+
     storage = new Storage({
       projectId,
-      keyFilename: path.resolve(keyFilename),
+      credentials: {
+        client_email: clientEmail,
+        private_key: formattedPrivateKey,
+      },
     });
 
     logger.info('✅ Google Cloud Storage initialized');

@@ -16,6 +16,7 @@ import {
   Search,
   Users,
   FileText,
+  Inbox,
 } from "lucide-react";
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Prompts", href: "/prompts", icon: FileText },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Calls", href: "/calls", icon: Phone },
+  { name: "Inbound", href: "/inbound", icon: Inbox },
   { name: "Social Media", href: "/social-media", icon: Share2 },
   { name: "WhatsApp Chat", href: "/whatsapp", icon: MessageCircle },
   { name: "AI Chatbot", href: "/chatbot", icon: Bot },
